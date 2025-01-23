@@ -13,13 +13,20 @@ dependencies = [
     "simpy>=4.1.1",
     "sqlalchemy>=2.0.37",
     "sympy>=1.13.1",
+    "torch>=2.5.1",
     "transformers>=4.48.0",
     "uvicorn>=0.34.0",
 ]
 [tool.taskipy.tasks]
+start = "src/app.py"
+
 model = "chainlit run src/models/huggingface_chainlit.py"
+
+lint = 'ruff check . && ruff check . --diff'
+format = 'ruff check . --fix && ruff format .'
 
 [dependency-groups]
 dev = [
+    "ruff>=0.9.3",
     "taskipy>=1.14.1",
 ]
