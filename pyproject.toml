@@ -18,9 +18,7 @@ dependencies = [
     "uvicorn>=0.34.0",
 ]
 [tool.taskipy.tasks]
-start = "src/app.py"
-
-model = "chainlit run src/models/huggingface_chainlit.py"
+start = "chainlit run src/app.py"
 
 lint = 'ruff check . && ruff check . --diff'
 format = 'ruff check . --fix && ruff format .'

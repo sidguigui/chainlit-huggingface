@@ -1,0 +1,157 @@
+{
+  "orders": {
+    "description": "Tabela que armazena os pedidos realizados pelos clientes, incluindo informações detalhadas sobre cada linha do pedido, como quantidade, preço, data e status.",
+    "columns": [
+      {
+        "name": "ordernumber",
+        "description": "Número único atribuído ao pedido. Serve como identificador principal para cada transação no sistema de vendas.",
+        "data_type": "integer",
+        "example": "10107"
+      },
+      {
+        "name": "quantityordered",
+        "description": "Quantidade de unidades do produto solicitado pelo cliente em um determinado pedido. Representa a quantidade total de itens para essa linha de pedido.",
+        "data_type": "integer",
+        "example": "30"
+      },
+      {
+        "name": "priceeach",
+        "description": "Preço unitário de cada item do pedido. Refere-se ao custo de cada unidade do produto sem descontos aplicados.",
+        "data_type": "float",
+        "example": "95.7"
+      },
+      {
+        "name": "orderlinenumber",
+        "description": "Número sequencial da linha dentro de um pedido. Cada linha de pedido tem seu próprio número, permitindo identificar facilmente os diferentes itens de um pedido.",
+        "data_type": "integer",
+        "example": "2"
+      },
+      {
+        "name": "sales",
+        "description": "Valor total da venda para uma linha de pedido. É calculado multiplicando a quantidade de itens pelo preço unitário.",
+        "data_type": "float",
+        "example": "2871"
+      },
+      {
+        "name": "orderdate",
+        "description": "Data em que o pedido foi realizado. Esse campo indica quando a transação foi registrada no sistema.",
+        "data_type": "datetime",
+        "example": "2/24/2003 0:00"
+      },
+      {
+        "name": "status",
+        "description": "Status atual do pedido, como 'Shipped' (Enviado), 'Pending' (Pendente), 'Cancelled' (Cancelado), etc. Reflete a fase do ciclo de vida do pedido.",
+        "data_type": "string",
+        "example": "Shipped"
+      },
+      {
+        "name": "qtr_id",
+        "description": "Identificador do trimestre do ano em que o pedido foi realizado. Esse valor ajuda na análise de vendas por período fiscal.",
+        "data_type": "integer",
+        "example": "1"
+      },
+      {
+        "name": "month_id",
+        "description": "Identificador do mês em que o pedido foi realizado. Utilizado para agrupamento de vendas por mês.",
+        "data_type": "integer",
+        "example": "2"
+      },
+      {
+        "name": "year_id",
+        "description": "Ano do pedido. Facilita a agregação e análise de dados de vendas por ano.",
+        "data_type": "integer",
+        "example": "2003"
+      },
+      {
+        "name": "productline",
+        "description": "Categoria ou linha de produtos a que o item pertence, como 'Motorcycles', 'Classic Cars', etc. Essa coluna categoriza o tipo de produto comprado.",
+        "data_type": "string",
+        "example": "Motorcycles"
+      },
+      {
+        "name": "msrp",
+        "description": "Preço sugerido de varejo do produto (Manufacturer's Suggested Retail Price). Representa o preço de venda recomendado pelo fabricante.",
+        "data_type": "float",
+        "example": "95"
+      },
+      {
+        "name": "productcode",
+        "description": "Código único que identifica o produto. É um identificador usado para rastrear o produto no inventário e nas vendas.",
+        "data_type": "string",
+        "example": "S10_1678"
+      },
+      {
+        "name": "customername",
+        "description": "Nome completo do cliente que fez o pedido.",
+        "data_type": "string",
+        "example": "Land of Toys Inc."
+      },
+      {
+        "name": "phone",
+        "description": "Número de telefone do cliente, usado para contato relacionado ao pedido.",
+        "data_type": "string",
+        "example": "2125557818"
+      },
+      {
+        "name": "addressline1",
+        "description": "Primeira linha do endereço do cliente, onde normalmente aparece o nome da rua ou da avenida.",
+        "data_type": "string",
+        "example": "897 Long Airport Avenue"
+      },
+      {
+        "name": "addressline2",
+        "description": "Segunda linha do endereço do cliente, onde podem ser adicionadas informações extras como apartamentos, blocos ou andares.",
+        "data_type": "string",
+        "example": ""
+      },
+      {
+        "name": "city",
+        "description": "Cidade do cliente onde o pedido será entregue.",
+        "data_type": "string",
+        "example": "NYC"
+      },
+      {
+        "name": "state",
+        "description": "Estado ou província do cliente.",
+        "data_type": "string",
+        "example": "NY"
+      },
+      {
+        "name": "postalcode",
+        "description": "Código postal do cliente, utilizado para identificar a região do endereço de entrega.",
+        "data_type": "string",
+        "example": "10022"
+      },
+      {
+        "name": "country",
+        "description": "País do cliente.",
+        "data_type": "string",
+        "example": "USA"
+      },
+      {
+        "name": "territory",
+        "description": "Território de vendas atribuído ao pedido. Pode indicar a região de vendas ou área de atuação da empresa.",
+        "data_type": "string",
+        "example": "NA"
+      },
+      {
+        "name": "contactlastname",
+        "description": "Sobrenome do principal contato de vendas do cliente.",
+        "data_type": "string",
+        "example": "Yu"
+      },
+      {
+        "name": "contactfirstname",
+        "description": "Primeiro nome do principal contato de vendas do cliente.",
+        "data_type": "string",
+        "example": "Kwai"
+      },
+      {
+        "name": "dealsize",
+        "description": "Tamanho do negócio baseado no volume ou valor da transação. Normalmente categorizado como 'Small', 'Medium' ou 'Large'.",
+        "data_type": "string",
+        "example": "Small"
+      }
+    ]
+  }
+}
