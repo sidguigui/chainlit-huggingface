@@ -1,18 +1,18 @@
-import psycopg2
 import os
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
 
 # Configuração da conexão com o banco de dados
-DB_CONFIG = {
-    'dbname': os.environ.get("DATABASENAME"),
-    'user': os.environ.get("DATABASEUSER"),
-    'password': os.environ.get("DATABASEPSSW"),
-    'host': os.environ.get("DATABASEHOST"),
-    'port': os.environ.get("DATABASEPORT")
-}
+DB_URL = f"postgresql://{os.environ.get('DATABASEUSER')}:{os.environ.get('DATABASEPSSW')}@" \
+         f"{os.environ.get('DATABASEHOST')}:{os.environ.get('DATABASEPORT')}/{os.environ.get('DATABASENAME')}"
+
+# Criando o engine e a sessão do SQLAlchemy
+engine = create_engine(DB_URL, echo=True)
+Session = sessionmaker(bind=engine)
 
 async def query_handler(query: str):
     """
-    Executa a query SQL no banco de dados.
+    Executa a query SQL no banco de dados utilizando SQLAlchemy.
 
     Args:
         query (str): A query SQL a ser executada.
@@ -20,27 +20,25 @@ async def query_handler(query: str):
     Returns:
         O resultado da consulta no banco de dados.
     """
-    try:
-        # Conectando ao banco de dados
-        conn = psycopg2.connect(**DB_CONFIG)
-        cursor = conn.cursor()
+    session = Session()  # Inicia a sessão com o banco de dados
 
+    try:
         # Executa a consulta
-        cursor.execute(query)
-        
+        result = session.execute(text(query))
+
         # Para uma consulta SELECT, recupera os resultados
         if query.strip().upper().startswith("SELECT"):
-            result = cursor.fetchall()
+            result = result.fetchall()
         else:
-            # Para outras consultas, retorna a quantidade de linhas afetadas
-            conn.commit()
-            result = f"{cursor.rowcount} linhas afetadas."
-
-        cursor.close()
-        conn.close()
+            # Para outras consultas, faz o commit para persistir as alterações
+            session.commit()
+            result = f"{result.rowcount} linhas afetadas."
 
         return result
 
     except Exception as e:
         print(f"Erro ao executar a query: {e}")
         return "Não foi possível executar a consulta no banco de dados."
+    
+    finally:
+        session.close()  # Fecha a sessão
