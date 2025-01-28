@@ -2,6 +2,7 @@ import pandas as pd  # type: ignore
 import os
 from sqlalchemy import create_engine  # type: ignore
 
+
 def csv_to_postgres(csv_path, table_name, postgres_uri):
     """
     Lê um arquivo CSV e insere os dados no PostgreSQL.
@@ -27,14 +28,21 @@ def csv_to_postgres(csv_path, table_name, postgres_uri):
 
         # Insere o DataFrame no banco de dados
         print(f"Inserindo os dados na tabela '{table_name}'...")
-        df.to_sql(table_name, engine, if_exists='append', index=False)
+        df.to_sql(table_name, engine, if_exists="append", index=False)
         print(f"Dados inseridos com sucesso na tabela '{table_name}'!")
 
     except Exception as e:
         print(f"Erro ao processar o arquivo CSV: {e}")
 
+
 # Configurações
-csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'data', 'sales_data_sample.csv')
+csv_path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "..",
+    "..",
+    "data",
+    "sales_data_sample.csv",
+)
 table_name = "orders"  # Substitua pelo nome da tabela no PostgreSQL
 
 # Pega as variáveis de ambiente para a conexão

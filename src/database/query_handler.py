@@ -1,6 +1,6 @@
 import os
-from sqlalchemy import create_engine, text # type: ignore
-from sqlalchemy.orm import sessionmaker # type: ignore
+from sqlalchemy import create_engine, text  # type: ignore
+from sqlalchemy.orm import sessionmaker  # type: ignore
 
 # Configuração da conexão com o banco de dados
 DB_URL = (

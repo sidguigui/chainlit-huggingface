@@ -1,4 +1,5 @@
 from datetime import datetime
+import asyncio
 
 
 async def query_generator(client, user_input: str, db_schema: dict):
@@ -31,32 +32,42 @@ async def query_generator(client, user_input: str, db_schema: dict):
 
         # Atualizar o prompt com contexto dinâmico de data
         prompt = f"""
-        Você é um assistente SQL. Sua tarefa é gerar uma query SQL válida com base na descrição fornecida pelo usuário e no esquema do banco de dados.
+        Você é um assistente especializado em SQL, treinado para gerar queries SQL válidas e funcionais com base na descrição do usuário e no esquema do banco de dados fornecido. Siga estas instruções cuidadosamente:
 
-        Esquema do banco de dados:
+        ### Esquema do Banco de Dados:
         {db_schema_str}
 
-        Contexto adicional:
-        - O mês atual é {current_month} (numérico).
+        ### Contexto Dinâmico:
+        - O mês atual é {current_month} (em formato numérico).
         - O ano atual é {current_year}.
-        - Sempre que possível, use funções SQL para lidar com datas de forma dinâmica, como MONTH(CURRENT_DATE) e YEAR(CURRENT_DATE).
+        - Sempre use funções SQL compatíveis com PostgreSQL para lidar com datas dinamicamente, como `CURRENT_DATE`, `EXTRACT(MONTH FROM CURRENT_DATE)` e `EXTRACT(YEAR FROM CURRENT_DATE)`.
 
-        Descrição do usuário: {user_input}
+        ### Suas Tarefas:
+        1. Analise a descrição fornecida pelo usuário.
+        2. Considere apenas tabelas e colunas existentes no esquema fornecido.
+        3. Use boas práticas para gerar uma query otimizada e funcional:
+        - Utilize nomes de colunas e tabelas exatamente como aparecem no esquema.
+        - Sempre que possível, adicione filtros lógicos e relevantes para os dados solicitados.
+        - Inclua ordenação e limites, caso seja relevante para a solicitação do usuário.
+        4. Responda exclusivamente com a query SQL finalizada, sem explicações ou comentários adicionais.
 
-        Dicas:
-        - Certifique-se de que a query esteja correta e funcional.
-        - Inclua apenas tabelas e colunas válidas do esquema fornecido.
-        - Sempre que possível, use funções SQL para lidar com datas dinamicamente.
-        - Responda apenas com a query SQL final, sem explicações adicionais.
+        ### Descrição do Usuário:
+        {user_input}
 
-        Query SQL:
+        ### Dicas Adicionais:
+        - Certifique-se de que a query seja válida e funcional no PostgreSQL.
+        - Use funções nativas para lidar com manipulações de datas.
+        - Sempre respeite o contexto atual de mês e ano ao trabalhar com dados temporais.
+
+        ### Query SQL:
         """
 
         # Log do prompt
         print(f"Prompt gerado para a API:\n{prompt}")
 
         # Chamada para a API GPT-4
-        response = client.chat.completions.create(
+        response = await asyncio.to_thread(
+            client.chat.completions.create,
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Você é um especialista em SQL."},
@@ -67,7 +78,13 @@ async def query_generator(client, user_input: str, db_schema: dict):
         )
 
         # Extrai a query da resposta
-        query = response.choices[0].message.content.strip()
+        query = (
+            response.choices[0]
+            .message.content.strip()
+            .strip("```")
+            .replace("sql\n", "")
+            .strip()
+        )
 
         # Log da query gerada
         print(f"Query gerada pela API:\n{query}")
