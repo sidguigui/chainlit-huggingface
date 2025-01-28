@@ -1,14 +1,17 @@
 import os
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, text # type: ignore
+from sqlalchemy.orm import sessionmaker # type: ignore
 
 # Configuração da conexão com o banco de dados
-DB_URL = f"postgresql://{os.environ.get('DATABASEUSER')}:{os.environ.get('DATABASEPSSW')}@" \
-         f"{os.environ.get('DATABASEHOST')}:{os.environ.get('DATABASEPORT')}/{os.environ.get('DATABASENAME')}"
+DB_URL = (
+    f"postgresql://{os.environ.get('DATABASEUSER')}:{os.environ.get('DATABASEPSSW')}@"
+    f"{os.environ.get('DATABASEHOST')}:{os.environ.get('DATABASEPORT')}/{os.environ.get('DATABASENAME')}"
+)
 
 # Criando o engine e a sessão do SQLAlchemy
 engine = create_engine(DB_URL, echo=True)
 Session = sessionmaker(bind=engine)
+
 
 async def query_handler(query: str):
     """
@@ -16,7 +19,7 @@ async def query_handler(query: str):
 
     Args:
         query (str): A query SQL a ser executada.
-    
+
     Returns:
         O resultado da consulta no banco de dados.
     """
@@ -39,6 +42,6 @@ async def query_handler(query: str):
     except Exception as e:
         print(f"Erro ao executar a query: {e}")
         return "Não foi possível executar a consulta no banco de dados."
-    
+
     finally:
         session.close()  # Fecha a sessão
