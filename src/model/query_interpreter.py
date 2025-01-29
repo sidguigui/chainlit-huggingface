@@ -1,42 +1,60 @@
-import asyncio
+from utils.log import log
 
 
-async def query_interpreter(client, user_input: str, query_made: str, query_result: list):
+async def query_interpreter(
+    client, user_input: str, query_made: str, query_result: list
+):
     try:
-        # Verificação de nulidade para garantir que o 'client' tenha um valor válido
-        if not client or not hasattr(client, "chat") or not hasattr(client.chat, "completions"):
+        log("[query_interpreter]", f"Query executada: {query_made}", "info")
+
+        # Verificação de client válido
+        if not client or not hasattr(client, "chat"):
             return "Erro: Cliente inválido ou não configurado corretamente."
-        
-        # Formatação do prompt dependendo do tipo de dados retornado pela consulta
-        if query_result and isinstance(query_result[0], tuple):
+
+        # Tratamento do resultado da query
+        if not query_result:
+            prompt = f"""
+            O usuário perguntou: "{user_input}"
+            A consulta gerada foi: {query_made}
+            O resultado da consulta não retornou dados.
+            Responda de forma clara informando que não há dados disponíveis para essa consulta.
+            """
+        elif isinstance(query_result, list) and all(
+            isinstance(row, tuple) for row in query_result
+        ):
             if len(query_result) == 1 and len(query_result[0]) == 1:
+                resultado = query_result[0][0]
                 prompt = f"""
-                O usuário fez a seguinte pergunta: "{user_input}"
+                O usuário perguntou: "{user_input}"
                 A consulta gerada foi: {query_made}
-                O resultado da consulta foi o valor {query_result[0][0]}.
-                Sua tarefa é gerar uma resposta clara e objetiva.
-                Exemplo de resposta: 'X pedidos foram feitos', onde X é o valor.
+                O resultado foi: {resultado}.
+                Responda de forma amigável, por exemplo: 'Foram feitos {resultado} pedidos'.
                 """
             else:
+                headers = ", ".join(
+                    [f"Coluna {i + 1}" for i in range(len(query_result[0]))]
+                )
+                linhas = "\n".join([", ".join(map(str, row)) for row in query_result])
                 prompt = f"""
-                O usuário fez a seguinte pergunta: "{user_input}"
+                O usuário perguntou: "{user_input}"
                 A consulta gerada foi: {query_made}
-                O resultado da consulta retornou os seguintes dados: {query_result}.
-                Sua tarefa é gerar uma resposta adequada para exibir esses dados.
-                Caso seja uma tabela, formate os dados com cabeçalhos e linhas.
+                O resultado foi uma tabela com as seguintes colunas: {headers}
+                E os seguintes valores:
+                {linhas}
+
+                Formate a resposta de forma clara e organizada para exibição ao usuário.
                 """
         else:
             prompt = f"""
-            O usuário fez a seguinte pergunta: "{user_input}"
+            O usuário perguntou: "{user_input}"
             A consulta gerada foi: {query_made}
-            O resultado da consulta não retornou dados esperados ou é indefinido.
-            Sua tarefa é responder adequadamente sobre a situação.
+            O formato do resultado da consulta não foi reconhecido.
+            Responda de forma adequada informando sobre o erro.
             """
-        
-        # Chama a API de forma assíncrona usando asyncio.to_thread para evitar bloqueio
+
+        # Chamada assíncrona da API
         try:
-            response = await asyncio.to_thread(
-                client.chat.completions.create,
+            response = await client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {
@@ -49,19 +67,17 @@ async def query_interpreter(client, user_input: str, query_made: str, query_resu
                 temperature=0.5,
             )
         except Exception as e:
-            print(f"Erro ao chamar a API: {e}")
+            log("[query_interpreter]", f"Erro ao chamar a API: {e}", "error")
             return "Erro ao comunicar com a API."
 
-        # Verifica a validade da resposta da API
-        if not response or "choices" not in response or not response["choices"]:
+        # Extração correta da resposta
+        if not response or not response.choices:
             return "Erro: Resposta inválida da IA."
 
-        # Extrai a resposta da IA
-        response_text = response["choices"][0]["message"]["content"].strip()
+        response_text = response.choices[0].message.content.strip()
 
         return response_text
 
     except Exception as e:
-        # Erro de captura geral, para assegurar que qualquer falha seja tratada
-        print(f"Erro ao gerar a resposta: {e}")
+        log("[query_interpreter]", f"Erro inesperado: {e}", "error")
         return "Desculpe, houve um erro ao processar sua solicitação."

@@ -461,6 +461,12 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/fc/fc/628b39e31b368aacbca51721ba7a66a4d140e9be916a0c7396664fdaed7a/literalai-0.1.103.tar.gz", hash = "sha256:060e86e63c0f53041a737b2183354ac092ee8cd9faec817dc95df639bb263a7d", size = 62540 }
 
 [[package]]
+name = "logging"
+version = "0.4.9.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/93/4b/979db9e44be09f71e85c9c8cfc42f258adfb7d93ce01deed2788b2948919/logging-0.4.9.6.tar.gz", hash = "sha256:26f6b50773f085042d301085bd1bf5d9f3735704db9f37c1ce6d8b85c38f2417", size = 96029 }
+
+[[package]]
 name = "markupsafe"
 version = "3.0.2"
 source = { registry = "https://pypi.org/simple" }
@@ -909,6 +915,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "asyncio" },
     { name = "chainlit" },
+    { name = "logging" },
     { name = "openai" },
     { name = "pandas" },
     { name = "protobuf" },
@@ -932,6 +939,7 @@ dev = [
 requires-dist = [
     { name = "asyncio", specifier = ">=3.4.3" },
     { name = "chainlit", specifier = ">=2.0.5" },
+    { name = "logging", specifier = ">=0.4.9.6" },
     { name = "openai", specifier = ">=1.59.7" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "protobuf", specifier = "==3.20.3" },

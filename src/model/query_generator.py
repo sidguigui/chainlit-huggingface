@@ -1,5 +1,6 @@
 from datetime import datetime
 import asyncio
+from utils.log import log
 
 
 async def query_generator(client, user_input: str, db_schema: dict):
@@ -27,10 +28,6 @@ async def query_generator(client, user_input: str, db_schema: dict):
 
             db_schema_str += "\n"
 
-        # Log do esquema para verificar se está correto
-        print(f"Esquema do banco de dados:\n{db_schema_str}")
-
-        # Atualizar o prompt com contexto dinâmico de data
         prompt = f"""
         Você é um assistente especializado em SQL, treinado para gerar queries SQL válidas e funcionais com base na descrição do usuário e no esquema do banco de dados fornecido. Siga estas instruções cuidadosamente:
 
@@ -61,11 +58,6 @@ async def query_generator(client, user_input: str, db_schema: dict):
 
         ### Query SQL:
         """
-
-        # Log do prompt
-        print(f"Prompt gerado para a API:\n{prompt}")
-
-        # Chamada para a API GPT-4
         response = await asyncio.to_thread(
             client.chat.completions.create,
             model="gpt-3.5-turbo",
@@ -87,7 +79,7 @@ async def query_generator(client, user_input: str, db_schema: dict):
         )
 
         # Log da query gerada
-        print(f"Query gerada pela API:\n{query}")
+        log("[query_generator]", f"Query gerada pela API:\n{query}", "info")
 
         # Verifica se a query gerada contém um SELECT válido
         if "SELECT" not in query.upper():
@@ -96,5 +88,5 @@ async def query_generator(client, user_input: str, db_schema: dict):
         return query
 
     except Exception as e:
-        print(f"Erro ao gerar a query SQL: {e}")
+        log("[query_generator]", f"Erro ao gerar a query SQL: {e}", "error")
         return "Não foi possível gerar uma query SQL válida. Verifique os dados fornecidos ou tente novamente."
