@@ -2,8 +2,10 @@ from datetime import datetime
 import asyncio
 from utils.log import log
 
+# Armazenar o histórico das conversas
+conversation_history = []  # Pode ser um banco de dados ou variável global
 
-async def query_generator(client, user_input: str, db_schema: dict):
+async def query_generator(client, user_input: str, db_schema: dict, history: str = ""):
     try:
         # Obter o mês e ano atuais dinamicamente
         current_month = datetime.now().month
@@ -28,6 +30,9 @@ async def query_generator(client, user_input: str, db_schema: dict):
 
             db_schema_str += "\n"
 
+        # Adiciona o histórico de mensagens ao prompt
+        history_str = f"Histórico da conversa:\n{history}" if history else ""
+
         prompt = f"""
         Você é um assistente especializado em SQL, treinado para gerar queries SQL válidas e funcionais com base na descrição do usuário e no esquema do banco de dados fornecido. Siga estas instruções cuidadosamente:
 
@@ -38,6 +43,9 @@ async def query_generator(client, user_input: str, db_schema: dict):
         - O mês atual é {current_month} (em formato numérico).
         - O ano atual é {current_year}.
         - Sempre use funções SQL compatíveis com PostgreSQL para lidar com datas dinamicamente, como `CURRENT_DATE`, `EXTRACT(MONTH FROM CURRENT_DATE)` e `EXTRACT(YEAR FROM CURRENT_DATE)`.
+
+        ### Histórico de Conversa:
+        {history_str}
 
         ### Suas Tarefas:
         1. Analise a descrição fornecida pelo usuário.
@@ -90,3 +98,9 @@ async def query_generator(client, user_input: str, db_schema: dict):
     except Exception as e:
         log("[query_generator]", f"Erro ao gerar a query SQL: {e}", "error")
         return "Não foi possível gerar uma query SQL válida. Verifique os dados fornecidos ou tente novamente."
+
+# Função para adicionar mensagens ao histórico
+def update_conversation_history(user_message: str, bot_response: str):
+    global conversation_history
+    conversation_history.append(f"Usuário: {user_message}")
+    conversation_history.append(f"Bot: {bot_response}")
