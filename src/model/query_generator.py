@@ -44,7 +44,7 @@ async def query_generator(client, user_input: str, db_schema: dict):
         2. Considere apenas tabelas e colunas existentes no esquema fornecido.
         3. Use boas práticas para gerar uma query otimizada e funcional:
         - Utilize nomes de colunas e tabelas exatamente como aparecem no esquema.
-        - Sempre que possível, adicione filtros lógicos e relevantes para os dados solicitados.
+        - Sempre que possível traga a tabela inteira, exemplificando os exemplos.
         - Inclua ordenação e limites, caso seja relevante para a solicitação do usuário.
         4. Responda exclusivamente com a query SQL finalizada, sem explicações ou comentários adicionais.
 

@@ -36,8 +36,7 @@ async def main(message: cl.Message):
         result_formatted = await query_interpreter(
             client, query, query_result, db_schema
         )
-        log("[app]", f"Resultado da consulta: {result_formatted}", "info")
-        await cl.Message(content=f"Resultado da consulta:\n\n{query_result}").send()
+        await cl.Message(content=f"Resultado da consulta:\n\n{result_formatted}").send()
     except Exception as e:
         log("[app]", f"Erro no App: {e}", "error")
         await cl.Message(

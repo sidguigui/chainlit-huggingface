@@ -1,83 +1,49 @@
 from utils.log import log
+import asyncio
 
 
-async def query_interpreter(
-    client, user_input: str, query_made: str, query_result: list
-):
+async def query_interpreter(client, user_input: str, query_made: str, query_result: list):
+    # Converter o resultado da query em uma tabela mais legível
+    log("[query_interpreter]", f"Interpretando a query: {query_result}", "info")
+    formatted_result = "\n".join(
+        [f"{' | '.join(map(str, row))}" for row in query_result]
+    )
+    log("[query_interpreter]", f"Resultado formatado: {formatted_result}", "info")
+    prompt = f"""
+    Você é um assistente especializado em interpretar e apresentar resultados de consultas SQL de forma clara e concisa. 
+
+    A consulta feita pelo usuário foi: "{user_input}"
+    A query executada foi: "{query_made}"
+
+    O resultado da query é o seguinte, organizado em forma de tabela:
+
+    {formatted_result}
+
+    A tabela acima contém os dados retornados pela consulta SQL. Seu objetivo é apresentar esses dados de maneira amigável, com as colunas claramente identificadas e as informações apresentadas de forma concisa. 
+
+    Use o formato de tabela Markdown para exibir as informações. Exemplo de resposta:
+
+    | Variável        | Valor       | Descrição                                |
+    |-----------------|-------------|------------------------------------------|
+    | ordernumber     | 10107       | Número único atribuído ao pedido         |
+    | quantityordered | 30          | Quantidade de unidades solicitadas      |
+    | priceeach       | 95.7        | Preço unitário do produto                |
+
+    Se houver várias linhas, cada linha de dados deve ser apresentada como uma linha de tabela. Caso não haja dados para uma coluna, deixe em branco, mas sempre forneça uma tabela organizada com cabeçalhos.
+
+    Responda apenas com a tabela em Markdown, sem explicações adicionais. 
+    """
+
+    
     try:
-        log("[query_interpreter]", f"Query executada: {query_made}", "info")
-
-        # Verificação de client válido
-        if not client or not hasattr(client, "chat"):
-            return "Erro: Cliente inválido ou não configurado corretamente."
-
-        # Tratamento do resultado da query
-        if not query_result:
-            prompt = f"""
-            O usuário perguntou: "{user_input}"
-            A consulta gerada foi: {query_made}
-            O resultado da consulta não retornou dados.
-            Responda de forma clara informando que não há dados disponíveis para essa consulta.
-            """
-        elif isinstance(query_result, list) and all(
-            isinstance(row, tuple) for row in query_result
-        ):
-            if len(query_result) == 1 and len(query_result[0]) == 1:
-                resultado = query_result[0][0]
-                prompt = f"""
-                O usuário perguntou: "{user_input}"
-                A consulta gerada foi: {query_made}
-                O resultado foi: {resultado}.
-                Responda de forma amigável, por exemplo: 'Foram feitos {resultado} pedidos'.
-                """
-            else:
-                headers = ", ".join(
-                    [f"Coluna {i + 1}" for i in range(len(query_result[0]))]
-                )
-                linhas = "\n".join([", ".join(map(str, row)) for row in query_result])
-                prompt = f"""
-                O usuário perguntou: "{user_input}"
-                A consulta gerada foi: {query_made}
-                O resultado foi uma tabela com as seguintes colunas: {headers}
-                E os seguintes valores:
-                {linhas}
-
-                Formate a resposta de forma clara e organizada para exibição ao usuário.
-                """
-        else:
-            prompt = f"""
-            O usuário perguntou: "{user_input}"
-            A consulta gerada foi: {query_made}
-            O formato do resultado da consulta não foi reconhecido.
-            Responda de forma adequada informando sobre o erro.
-            """
-
-        # Chamada assíncrona da API
-        try:
-            response = await client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "Você é um assistente que responde com base em resultados de banco de dados.",
-                    },
-                    {"role": "user", "content": prompt},
-                ],
-                max_tokens=200,
-                temperature=0.5,
-            )
-        except Exception as e:
-            log("[query_interpreter]", f"Erro ao chamar a API: {e}", "error")
-            return "Erro ao comunicar com a API."
-
-        # Extração correta da resposta
-        if not response or not response.choices:
-            return "Erro: Resposta inválida da IA."
-
-        response_text = response.choices[0].message.content.strip()
-
-        return response_text
+        response = await asyncio.to_thread(
+            client.chat.completions.create, model="gpt-3.5-turbo",
+            messages=[{"role": "system", "content": "Você é um assistente especializado em interpretação de dados."},
+                      {"role": "user", "content": prompt}],
+            max_tokens=150
+        )
+        return response.choices[0].message.content.strip()
 
     except Exception as e:
-        log("[query_interpreter]", f"Erro inesperado: {e}", "error")
-        return "Desculpe, houve um erro ao processar sua solicitação."
+        log("[query_interpreter]", f"Erro na IA: {str(e)}", "error")
+        return "Houve um erro ao processar sua solicitação. Tente novamente."
