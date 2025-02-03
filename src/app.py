@@ -1,7 +1,8 @@
 import json
 import os
+import re  # Importando a biblioteca re
 import chainlit as cl  # type: ignore
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # type: ignore
 from langchain_openai import ChatOpenAI  # type: ignore
 from langchain.chains import create_sql_query_chain  # type: ignore
 from langchain_community.utilities import SQLDatabase  # type: ignore
@@ -13,11 +14,9 @@ from utils.log import log
 
 load_dotenv()
 
-
 def load_db_schema(schema_path="src/utils/db_schema.json"):
     with open(schema_path, "r") as f:
         return json.load(f)
-
 
 schema_info = load_db_schema()
 
@@ -48,7 +47,6 @@ Answer: """
 
 answer = answer_prompt | llm | StrOutputParser()
 
-
 # Lista para armazenar o histórico de mensagens
 chat_history = []
 
@@ -61,16 +59,27 @@ async def main(message: cl.Message):
 
     # Criar o histórico de mensagens para o prompt, incluindo a estrutura do banco de dados e as mensagens anteriores
     prompt_context = f"""
-    Você é um assistente SQL. Aqui está a estrutura do banco de dados para referência:
+    Você é um assistente especializado em SQL. Sua tarefa é gerar consultas SQL precisas e eficientes com base nos seguintes dados:
+
+    - **Estrutura do banco de dados:**  
     {json.dumps(schema_info, indent=4)}
 
-    Histórico de conversa:
+    - **Histórico da conversa:**  
     {json.dumps(chat_history, indent=4)}
 
-    Baseado nisso, gere uma consulta SQL precisa para a seguinte pergunta:
-    {message.content}
+    **Instruções para gerar a consulta:**  
+    1. Gere uma **consulta SQL precisa** com base na seguinte pergunta:  
+       **"{message.content}"**
+    2. **Não inclua** a coluna `content` no `SELECT`, mas utilize-a para contextualizar pesquisas, se necessário.
+    3. Se a pergunta contiver um termo entre **aspas simples**, a consulta deve utilizar uma expressão regular no seguinte formato:
+       
+       **Exemplo de prompt:**  
+       _Qual a última notícia sobre 'balões'?_
+       
+       **Filtro correto na query:**  
+       %(^|[\s[:punct:]])Balões([\s[:punct:]]|$)%
     """
-    
+
     log("[main]", "Gerando a consulta SQL a partir do contexto", "info")
 
     response = chain.invoke({"question": prompt_context})
@@ -79,8 +88,8 @@ async def main(message: cl.Message):
     log("[main]", f"Consulta SQL gerada: {sql_query}", "info")
 
     if "COUNT(" in sql_query:
-        sql_query = sql_query.replace("LIMIT 10", "")
-        log("[main]", "Removido 'LIMIT 10' da consulta devido a uso de 'COUNT'", "info")
+        sql_query = re.sub(r"LIMIT\s+\d+", "", sql_query, flags=re.IGNORECASE)
+        log("[main]", "Removido 'LIMIT' da consulta devido a uso de 'COUNT'", "info")
 
     try:
         result = session.execute(text(sql_query))
@@ -106,13 +115,11 @@ async def main(message: cl.Message):
         table_text = ""
         log("[main]", f"Erro ao executar a consulta SQL: {str(e)}", "error")
 
-
     final_answer = answer.invoke(
         {"question": message.content, "query": sql_query, "result": result_text}
     )
-    
-    chat_history.append({"role": "system", "content": final_answer})
 
+    chat_history.append({"role": "system", "content": final_answer})
 
     log("[main]", f"Resposta final gerada: {final_answer}", "info")
 

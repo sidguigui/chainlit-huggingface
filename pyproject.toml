@@ -7,13 +7,14 @@ requires-python = ">=3.12"
 dependencies = [
     "chainlit>=2.1.0",
     "crewai-tools>=0.33.0",
+    "flask>=3.1.0",
     "langchain>=0.3.17",
     "openai>=1.60.2",
     "psycopg2-binary>=2.9.10",
     "sqlalchemy>=2.0.37",
 ]
 [tool.taskipy.tasks]
-start = "chainlit run src/app.py"
+start = "chainlit run src/app.py --no-cache"
 
 lint = 'ruff check . && ruff check . --diff'
 format = 'ruff check . --fix && ruff format .'
